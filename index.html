@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>demo - volatc</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #stream {
+            position: absolute;
+        }
+
+        audio::-webkit-media-controls-timeline,
+        video::-webkit-media-controls-timeline {
+            display: none;
+        }
+
+        audio::-webkit-media-controls-current-time-display,
+        audio::-webkit-media-controls-time-remaining-display {
+            display: none;
+        }
+
+        audio {
+            width: 150px;
+            border-radius: 10px;
+        }
+
+        .mapboxgl-popup {}
+
+        .mapboxgl-popup-content {
+            border-radius: 15% 15% 35% 35% !important;
+            border: 0.2em solid #fff;
+            background: #ff3c19 !important;
+            width: 100%;
+        }
+
+        .station-title {
+            color: #fff;
+            font-size: 1.5em;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+
+        let stations = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.358665,
+                            34.200668
+                        ]
+                    },
+                    "properties": {
+                        "name": "KBUR",
+                        "lat": 34.200668,
+                        "lng": -118.358665,
+                        "url": "https://www.liveatc.net/search/\\?icao=kbur",
+                        "feeds": [
+                            {
+                                "id": "kbur3",
+                                "url": "https://s1-bos.liveatc.net/kbur3"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.243805,
+                            33.889915
+                        ]
+                    },
+                    "properties": {
+                        "name": "KCPM",
+                        "lat": 33.889915,
+                        "lng": -118.243805,
+                        "url": "https://www.liveatc.net/search/\\?icao=kcpm",
+                        "feeds": [
+                            {
+                                "id": "kcpm2",
+                                "url": "https://s1-bos.liveatc.net/kcpm2"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.034843,
+                            34.08601
+                        ]
+                    },
+                    "properties": {
+                        "name": "KEMT",
+                        "lat": 34.08601,
+                        "lng": -118.034843,
+                        "url": "https://www.liveatc.net/search/\\?icao=kemt",
+                        "feeds": [
+                            {
+                                "id": "kemt",
+                                "url": "https://s1-fmt2.liveatc.net/kemt"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.407158,
+                            33.94252
+                        ]
+                    },
+                    "properties": {
+                        "name": "KLAX",
+                        "lat": 33.94252,
+                        "lng": -118.407158,
+                        "url": "https://www.liveatc.net/search/\\?icao=klax",
+                        "feeds": [
+                            {
+                                "id": "klax_twr",
+                                "url": "https://s1-fmt2.liveatc.net/klax_twr"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.151611,
+                            33.817722
+                        ]
+                    },
+                    "properties": {
+                        "name": "KLGB",
+                        "lat": 33.817722,
+                        "lng": -118.151611,
+                        "url": "https://www.liveatc.net/search/\\?icao=klgb",
+                        "feeds": [
+                            {
+                                "id": "klgb_twr",
+                                "url": "https://s1-fmt2.liveatc.net/klgb_twr"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.451309,
+                            34.015835
+                        ]
+                    },
+                    "properties": {
+                        "name": "KSMO",
+                        "lat": 34.015835,
+                        "lng": -118.451309,
+                        "url": "https://www.liveatc.net/search/\\?icao=ksmo",
+                        "feeds": [
+                            {
+                                "id": "ksmo2_s",
+                                "url": "https://s1-bos.liveatc.net/ksmo2_s"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.489975,
+                            34.209805
+                        ]
+                    },
+                    "properties": {
+                        "name": "KVNY",
+                        "lat": 34.209805,
+                        "lng": -118.489975,
+                        "url": "https://www.liveatc.net/search/\\?icao=kvny",
+                        "feeds": [
+                            {
+                                "id": "kvny1_4",
+                                "url": "https://s1-bos.liveatc.net/kvny1_4"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -118.413429,
+                            34.259323
+                        ]
+                    },
+                    "properties": {
+                        "name": "KWHP",
+                        "lat": 34.259323,
+                        "lng": -118.413429,
+                        "url": "https://www.liveatc.net/search/\\?icao=kwhp",
+                        "feeds": [
+                            {
+                                "id": "kwhp1_gnd_twr",
+                                "url": "https://s1-fmt2.liveatc.net/kwhp1_gnd_twr"
+                            }
+                        ]
+                    }
+                }
+            ]
+        };
+
+        mapboxgl.accessToken = 'MAPBOX_ACCESS_TOKEN';
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-118.1004, 33.8969],
+            zoom: 10,
+            hash: true
+        });
+
+        map.on("load", () => {
+
+            map.addSource('stations', {
+                type: 'geojson',
+                data: stations
+            });
+
+            map.addLayer({
+                'id': 'stations-layer',
+                'type': 'circle',
+                'source': 'stations',
+                'paint': {
+                    'circle-radius': 10,
+                    'circle-stroke-width': 2,
+                    'circle-color': '#ff3c19',
+                    'circle-stroke-color': 'white'
+                }
+            });
+
+            map.on('click', 'stations-layer', (e) => {
+
+                let f = e.features[0];
+                const coordinates = f.geometry.coordinates.slice();
+
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+
+                if (!f.properties.feeds) {
+                    return;
+                }
+
+                let feeds = JSON.parse(f.properties.feeds);
+                let feed = feeds[0];
+
+                let stream = document.getElementById(`${feed.id}`);
+                if (stream) {
+                    stream.parentElement.parentElement.remove();
+                    return
+                }
+
+                const popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                });
+
+                let html = `
+                <div class="station-title">${f.properties.name}:${feed.id}</div>
+                    <audio id="${feed.id}" class="feed" data-station=${f.properties.name} controls autoplay preload="auto">
+                        <source src="${feed.url}" type="audio/mpeg">
+                    </audio>
+                `;
+
+                popup.setLngLat(coordinates).setHTML(html).addTo(map);
+
+                stream = document.getElementById(`${feed.id}`);
+
+                updateFeedVolumes();
+            });
+
+            map.on('mouseenter', 'stations-layer', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'stations-layer', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            map.on('moveend', () => {
+                updateFeedVolumes();
+            });
+        })
+
+        function updateFeedVolumes() {
+            let feeds = document.getElementsByClassName("feed");
+
+            let center = map.getCenter();
+            var centerPt = turf.point([center.lng, center.lat]);
+
+            let sw = map.getBounds().getSouthWest();
+            var swPt = turf.point([sw.lng, sw.lat]);
+            var sw_center = turf.distance(centerPt, swPt, { units: 'kilometers' });
+
+            for (let i = 0; i < feeds.length; i++) {
+                let feed = feeds[i];
+                const station = map.querySourceFeatures('stations', {
+                    sourceLayer: 'stations-layer',
+                    filter: ['==', feed.dataset.station, ['get', 'name']]
+                });
+                if (station.length) {
+                    var stationPt = turf.point([station[0].properties.lng, station[0].properties.lat]);
+                    var station_center = turf.distance(centerPt, stationPt, { units: 'kilometers' });
+                    var vol = 1 - Math.pow(station_center / sw_center, 0.5);
+                    vol = vol < 0 ? 0 : vol.toPrecision(2);
+                    feed.volume = vol;
+                    feed.play();
+                    console.log(`set feed ${feed.id} volume to ${vol} and play`);
+                } else {
+                    feed.volume = 0;
+                    feed.pause();
+                    console.log(`set feed ${feed.id} volume to 0 and pause`);
+                }
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
