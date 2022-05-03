@@ -2,6 +2,8 @@
 
 ![](volatc.png)
 
+To run the demo...
+
 ```bash
 git clone git@github.com:engelsjk/demo-volatc.git
 ```
