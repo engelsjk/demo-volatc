@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <title>demo - volatc</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.js"></script>
+    <script src='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css' rel='stylesheet' />
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
     <style>
@@ -248,11 +248,31 @@
             ]
         };
 
-        mapboxgl.accessToken = 'MAPBOX_ACCESS_TOKEN';
-
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11',
+            style: {
+                'version': 8,
+                'sources': {
+                    'raster-tiles': {
+                        'type': 'raster',
+                        'tiles': [
+                            'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
+                        ],
+                        'tileSize': 256,
+                        'attribution':
+                            'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>'
+                    }
+                },
+                'layers': [
+                    {
+                        'id': 'simple-tiles',
+                        'type': 'raster',
+                        'source': 'raster-tiles',
+                        'minzoom': 0,
+                        'maxzoom': 22
+                    }
+                ]
+            },
             center: [-118.1004, 33.8969],
             zoom: 10,
             hash: true
@@ -299,7 +319,7 @@
                     return
                 }
 
-                const popup = new mapboxgl.Popup({
+                const popup = new maplibregl.Popup({
                     closeButton: false,
                     closeOnClick: false
                 });
@@ -312,8 +332,6 @@
                 `;
 
                 popup.setLngLat(coordinates).setHTML(html).addTo(map);
-
-                stream = document.getElementById(`${feed.id}`);
 
                 updateFeedVolumes();
             });
@@ -339,7 +357,7 @@
 
             let sw = map.getBounds().getSouthWest();
             var swPt = turf.point([sw.lng, sw.lat]);
-            var sw_center = turf.distance(centerPt, swPt, { units: 'kilometers' });
+            var swToCenter = turf.distance(centerPt, swPt, { units: 'kilometers' });
 
             for (let i = 0; i < feeds.length; i++) {
                 let feed = feeds[i];
@@ -349,8 +367,8 @@
                 });
                 if (station.length) {
                     var stationPt = turf.point([station[0].properties.lng, station[0].properties.lat]);
-                    var station_center = turf.distance(centerPt, stationPt, { units: 'kilometers' });
-                    var vol = 1 - Math.pow(station_center / sw_center, 0.5);
+                    var stationToCenter = turf.distance(centerPt, stationPt, { units: 'kilometers' });
+                    var vol = 1 - Math.pow(stationToCenter / swToCenter, 0.5);
                     vol = vol < 0 ? 0 : vol.toPrecision(2);
                     feed.volume = vol;
                     feed.play();
