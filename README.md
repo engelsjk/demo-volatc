@@ -8,7 +8,7 @@ To run the demo...
 git clone git@github.com:engelsjk/demo-volatc.git
 ```
 
-Then spin up a simple web server.
+Then spin up a simple web server (using [http-server](https://www.npmjs.com/package/http-server) or something else).
 
 ```bash
 http-server
